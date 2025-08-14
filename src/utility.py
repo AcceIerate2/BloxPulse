@@ -1,7 +1,16 @@
+import os, json
 from filelock import FileLock
-import json
 
-dataFilePath = "../data.json"
+# Store file in /tmp instead of ../
+DATA_DIR = "/tmp"
+os.makedirs(DATA_DIR, exist_ok=True)
+dataFilePath = os.path.join(DATA_DIR, "data.json")
+
+# Make sure the file exists
+if not os.path.exists(dataFilePath):
+    with open(dataFilePath, "w") as f:
+        json.dump({}, f)
+
 
 def validData(receivedData):    
     if type(receivedData) != dict: 
@@ -30,42 +39,42 @@ def validData(receivedData):
     return None, 200
 
 def writeToFile(universeId: str, referenceId: str, data: dict):
-    if type(universeId) != str or type(referenceId) != str: 
+    if not isinstance(universeId, str) or not isinstance(referenceId, str):
         return
 
-    lock = FileLock(dataFilePath)
+    lock = FileLock(dataFilePath + ".lock")
     with lock:
         with open(dataFilePath, "r") as f:
             fileContent = json.load(f)
 
-        if not fileContent[universeId]:
+        # Ensure universeId dict exists
+        if universeId not in fileContent:
             fileContent[universeId] = {}
 
-        if fileContent[universeId][referenceId]:
+        # Avoid overwriting if exists
+        if referenceId in fileContent[universeId]:
             return
-        
+
         fileContent[universeId][referenceId] = data
+
         with open(dataFilePath, "w") as f:
             json.dump(fileContent, f, indent=4)
 
-        f.close()
     
 def removeFromFile(universeId: str, referenceId: str):
-    if type(universeId) != str or type(referenceId) != str: 
+    if not isinstance(universeId, str) or not isinstance(referenceId, str):
         return
 
-    lock = FileLock(dataFilePath)
+    lock = FileLock(dataFilePath + ".lock")
     with lock:
         with open(dataFilePath, "r") as f:
             fileContent = json.load(f)
 
-        if not fileContent[universeId]: 
+        if universeId not in fileContent:
             return
 
-        if fileContent[universeId][referenceId]:
-            del fileContent[referenceId]
-        
+        if referenceId in fileContent[universeId]:
+            del fileContent[universeId][referenceId]
+
         with open(dataFilePath, "w") as f:
             json.dump(fileContent, f, indent=4)
-
-        f.close()
