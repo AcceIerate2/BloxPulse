@@ -41,6 +41,8 @@ def loop_scheduler():
 def Schedule():
     receivedData = request.get_json(silent=True) or {}
     
+    print(receivedData)
+
     # Quick validation for required fields
     required = ["universeId", "notificationId", "key", "time", "message"]
     for field in required:
@@ -52,7 +54,11 @@ def Schedule():
     if statusCode != 200:
         return errorMessage, statusCode
 
+    print("something")
+
     utility.writeToFile(receivedData["universeId"], str(receivedData["key"]), receivedData)
+
+    print("okay umm")
     return "", 200 
 
 @app.route("/", methods=["GET"])
