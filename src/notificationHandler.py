@@ -37,6 +37,9 @@ def pushNotification(data: ReceivedData):
 
     try:
         resp = requests.post(url, headers=headers, json=payload, timeout=10)
+
+        print(resp.status_code)
+
         resp.raise_for_status()
         return {
             "status": "success",
