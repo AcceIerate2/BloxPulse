@@ -30,10 +30,10 @@ def pushNotification(data: ReceivedData):
             "universe": f"universes/{data['universeId']}"
         },
         "payload": {
-            "message_id": data["notificationId"],  # template assetId
-            "type": "MOMENT",
+            "type": "MOMENT",                     # enum from docs
+            "messageId": data["notificationId"],  # NOTE: camelCase
             "parameters": {
-                "text": data["message"]  # this fills the {text} variable in Roblox
+                "text": { "stringValue": data["message"] }  # fills your {text}
             }
         }
     }
