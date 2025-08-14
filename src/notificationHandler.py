@@ -1,6 +1,6 @@
 import requests
 from typing import TypedDict
-from .. import config
+import config
 
 URL_ENDPOINT = config.URL_ENDPOINT
 API_KEY = config.API_KEY
