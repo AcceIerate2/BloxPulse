@@ -49,9 +49,10 @@ def Schedule():
 
     return 200    
 
-@app.route("/")
+@app.route("/", methods=["GET"])
 def index():
-    return 200
+    print("[GET] request")
+    return "Hello World!"
 
 if __name__ == "__main__":
     threading.Thread(target=loop_scheduler).start()
