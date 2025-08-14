@@ -39,15 +39,21 @@ def loop_scheduler():
 
 @app.route("/Schedule", methods=["POST"])
 def Schedule():
-    receivedData: ReceivedData = request.get_json() 
+    receivedData = request.get_json(silent=True) or {}
+    
+    # Quick validation for required fields
+    required = ["universeId", "notificationId", "key", "time", "message"]
+    for field in required:
+        if field not in receivedData:
+            return {"error": f"Missing field: {field}"}, 400
 
-    errorMesssage, statusCode = utility.validData(receivedData)
-    if type(statusCode) == int and statusCode != 200:
-        return errorMesssage, statusCode
+    # Now pass to your deeper validation
+    errorMessage, statusCode = utility.validData(receivedData)
+    if statusCode != 200:
+        return errorMessage, statusCode
 
     utility.writeToFile(receivedData["universeId"], str(receivedData["key"]), receivedData)
-
-    return 200    
+    return "", 200 
 
 @app.route("/", methods=["GET"])
 def index():
