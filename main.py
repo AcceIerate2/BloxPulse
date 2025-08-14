@@ -7,6 +7,8 @@ import time
 import threading
 from src import notificationHandler
 
+from src.utility import dataFilePath   # <-- import the SAME path the writer uses
+
 from typing import TypedDict
 class ReceivedData(TypedDict):
     universeId: str # straight forward
@@ -14,8 +16,6 @@ class ReceivedData(TypedDict):
     key: str # userid
     time: int # set the exact time (that unix epoch thingy)
     message: str # messsage to send
-
-dataFilePath = "data.json"
 
 app = Flask(__name__)
 
