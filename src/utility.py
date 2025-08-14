@@ -35,7 +35,11 @@ def validData(receivedData):
     message = receivedData["message"]
     if type(message) != str:
         return {"error": "Invalid Message"}, 400
-    
+
+    api_key = receivedData["api_key"]
+    if type(api_key) != str:
+        return {"error": "Invalid api_key"}, 400
+
     return None, 200
 
 def writeToFile(universeId: str, referenceId: str, data: dict):

@@ -16,6 +16,7 @@ class ReceivedData(TypedDict):
     key: str # userid
     time: int # set the exact time (that unix epoch thingy)
     message: str # messsage to send
+    api_key: str
 
 app = Flask(__name__)
 
@@ -26,8 +27,6 @@ def loop_scheduler():
             # read
             with open(dataFilePath, "r") as f:
                 fileContent = json.load(f)
-
-            print(fileContent) # RIGHT HERE CHATGPT HERE HELLO!!!!!!!!!! THIS <- WHY ISNT IT PRINTING ON HEROKU
 
             now = time.time()
             to_delete = []  # collect (uniId, refId) to delete after iter
@@ -71,11 +70,9 @@ threading.Thread(target=loop_scheduler).start()
 @app.route("/Schedule", methods=["POST"])
 def Schedule():
     receivedData = request.get_json(silent=True) or {}
-    
-    print(receivedData)
 
     # Quick validation for required fields
-    required = ["universeId", "notificationId", "key", "time", "message"]
+    required = ["universeId", "notificationId", "key", "time", "message", "api_key"] 
     for field in required:
         if field not in receivedData:
             return {"error": f"Missing field: {field}"}, 400
@@ -85,11 +82,8 @@ def Schedule():
     if statusCode != 200:
         return errorMessage, statusCode
 
-    print("something")
-
     utility.writeToFile(receivedData["universeId"], str(receivedData["key"]), receivedData)
 
-    print("okay umm")
     return "", 200 
 
 @app.route("/", methods=["GET"])

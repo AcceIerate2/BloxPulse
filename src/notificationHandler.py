@@ -3,7 +3,6 @@ from typing import TypedDict
 import config
 
 URL_ENDPOINT = config.URL_ENDPOINT
-API_KEY = config.API_KEY
 
 class ReceivedData(TypedDict):
     universeId: str       # straight forward
@@ -11,6 +10,7 @@ class ReceivedData(TypedDict):
     key: str              # userId
     time: int             # unix epoch
     message: str          # message to send
+    api_key: str
 
 def pushNotification(data: ReceivedData):
     """
@@ -21,7 +21,7 @@ def pushNotification(data: ReceivedData):
     url = f"{URL_ENDPOINT}/users/{user_id}/notifications"
 
     headers = {
-        "x-api-key": API_KEY,
+        "x-api-key": data["api_key"],
         "Content-Type": "application/json"
     }
 
