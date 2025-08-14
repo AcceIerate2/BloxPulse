@@ -27,7 +27,7 @@ def loop_scheduler():
             with open(dataFilePath, "r") as f:
                 fileContent = json.load(f)
 
-            print(fileContent)
+            print(fileContent) # RIGHT HERE CHATGPT HERE HELLO!!!!!!!!!! THIS <- WHY ISNT IT PRINTING ON HEROKU
 
             now = time.time()
             to_delete = []  # collect (uniId, refId) to delete after iter
@@ -66,6 +66,8 @@ def loop_scheduler():
         time.sleep(1)
 
 
+threading.Thread(target=loop_scheduler).start()
+
 @app.route("/Schedule", methods=["POST"])
 def Schedule():
     receivedData = request.get_json(silent=True) or {}
@@ -94,7 +96,3 @@ def Schedule():
 def index():
     print("[GET] request")
     return "Hello World!"
-
-if __name__ == "__main__":
-    threading.Thread(target=loop_scheduler).start()
-    app.run()
