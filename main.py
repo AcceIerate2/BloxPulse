@@ -5,6 +5,7 @@ from filelock import FileLock
 import json
 import time
 import threading
+from src import notificationHandler
 
 from typing import TypedDict
 class ReceivedData(TypedDict):
@@ -22,20 +23,46 @@ def loop_scheduler():
     while True:
         lock = FileLock(f"{dataFilePath}.lock")
         with lock:
+            # read
             with open(dataFilePath, "r") as f:
                 fileContent = json.load(f)
 
             now = time.time()
+            to_delete = []  # collect (uniId, refId) to delete after iter
 
-            for refId, entry in list(fileContent.items()):
-                if now >= entry.get("time", 0):
-                    print(f"Push to {refId}: {entry['message']}")
-                    del fileContent[refId]  # remove after sending
+            # iterate
+            for uniId, parentEntry in list(fileContent.items()):
+                if not isinstance(parentEntry, dict):
+                    continue
+                for refId, entry in list(parentEntry.items()):
+                    if not isinstance(entry, dict):
+                        continue
+                    due_at = entry.get("time", 0)
+                    if now >= due_at:
+                        # send the notification using the entry payload
+                        try:
+                            notificationHandler.pushNotification(entry)
+                            print(f"Push to {refId}: {entry.get('message')}")
+                        except Exception as e:
+                            print(f"Failed to push {refId}: {e}")
+                            # optionally continue without deleting so it retries next tick
+                        else:
+                            to_delete.append((uniId, refId))
 
+            # apply deletions
+            for uniId, refId in to_delete:
+                if uniId in fileContent and refId in fileContent[uniId]:
+                    del fileContent[uniId][refId]
+                    # clean up empty universe buckets
+                    if not fileContent[uniId]:
+                        del fileContent[uniId]
+
+            # write once
             with open(dataFilePath, "w") as f:
                 json.dump(fileContent, f, indent=4)
 
-        time.sleep(1)  # wait 1 second before checking again
+        time.sleep(1)
+
 
 @app.route("/Schedule", methods=["POST"])
 def Schedule():
