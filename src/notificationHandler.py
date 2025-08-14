@@ -30,11 +30,14 @@ def pushNotification(data: ReceivedData):
             "universe": f"universes/{data['universeId']}"
         },
         "payload": {
-            "message_id": data["notificationId"],  # assetId
-            "type": "MOMENT"
+            "message_id": data["notificationId"],  # template assetId
+            "type": "MOMENT",
+            "parameters": {
+                "text": data["message"]  # this fills the {text} variable in Roblox
+            }
         }
     }
-
+    
     try:
         resp = requests.post(url, headers=headers, json=payload, timeout=10)
 
