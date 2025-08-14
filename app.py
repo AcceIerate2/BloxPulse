@@ -49,6 +49,10 @@ def Schedule():
 
     return 200    
 
+@app.route("/")
+def index():
+    return 200
+
 if __name__ == "__main__":
     threading.Thread(target=loop_scheduler).start()
     app.run()
