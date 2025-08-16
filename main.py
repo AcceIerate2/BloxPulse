@@ -93,7 +93,7 @@ def data():
         with open("data.json", "r") as f:
             return jsonify(json.load(f))
         
-    return jsonify({})
+    return "Couldn't get data."
 
 @app.route("/", methods=["GET"])
 def index():
