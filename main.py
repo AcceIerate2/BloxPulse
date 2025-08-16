@@ -28,6 +28,8 @@ def loop_scheduler():
             with open(dataFilePath, "r") as f:
                 fileContent = json.load(f)
 
+            print(fileContent)
+
             now = time.time()
             to_delete = []  # collect (uniId, refId) to delete after iter
 
