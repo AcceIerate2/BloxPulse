@@ -28,8 +28,6 @@ def loop_scheduler():
             with open(dataFilePath, "r") as f:
                 fileContent = json.load(f)
 
-            print(fileContent)
-
             now = time.time()
             to_delete = []  # collect (uniId, refId) to delete after iter
 
@@ -44,8 +42,9 @@ def loop_scheduler():
                     if now >= due_at:
                         # send the notification using the entry payload
                         try:
-                            notificationHandler.pushNotification(entry)
                             print(f"Push to {refId}: {entry.get('message')}")
+                            notificationHandler.pushNotification(entry)
+                            print("Pushed!")
                         except Exception as e:
                             print(f"Failed to push {refId}: {e}")
                             # optionally continue without deleting so it retries next tick
