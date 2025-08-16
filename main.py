@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 import requests
 from src import utility
 from filelock import FileLock
@@ -85,6 +85,15 @@ def Schedule():
     utility.writeToFile(receivedData["universeId"], str(receivedData["key"]), receivedData)
 
     return "", 200 
+
+@app.route("/data", methods=["GET"])
+def data():
+    lock = FileLock(f"{dataFilePath}.lock")
+    with lock:
+        with open("data.json", "r") as f:
+            return jsonify(json.load(f))
+        
+    return jsonify({})
 
 @app.route("/", methods=["GET"])
 def index():
