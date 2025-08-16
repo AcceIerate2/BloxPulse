@@ -92,7 +92,7 @@ def Schedule():
 def data():
     lock = FileLock(f"{dataFilePath}.lock")
     with lock:
-        with open("data.json", "r") as f:
+        with open(f"{dataFilePath}", "r") as f:
             return jsonify(json.load(f))
         
     return "Couldn't get data."
