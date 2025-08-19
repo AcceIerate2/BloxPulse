@@ -6,6 +6,8 @@ DATA_DIR = "/tmp"
 os.makedirs(DATA_DIR, exist_ok=True)
 dataFilePath = os.path.join(DATA_DIR, "data.json")
 
+lock = FileLock(dataFilePath + ".lock")
+
 # Make sure the file exists
 if not os.path.exists(dataFilePath):
     with open(dataFilePath, "w") as f:
@@ -46,10 +48,11 @@ def writeToFile(universeId: str, referenceId: str, data: dict):
     if not isinstance(universeId, str) or not isinstance(referenceId, str):
         return
 
-    lock = FileLock(dataFilePath + ".lock")
     with lock:
-        with open(dataFilePath, "r") as f:
+        with open(dataFilePath, "r", encoding="utf-8") as f:
             fileContent = json.load(f)
+
+        f.close()
 
         # Ensure universeId dict exists
         if universeId not in fileContent:
@@ -62,23 +65,6 @@ def writeToFile(universeId: str, referenceId: str, data: dict):
         fileContent[universeId][referenceId] = data
 
         with open(dataFilePath, "w") as f:
-            json.dump(fileContent, f, indent=4)
-
-    
-def removeFromFile(universeId: str, referenceId: str):
-    if not isinstance(universeId, str) or not isinstance(referenceId, str):
-        return
-
-    lock = FileLock(dataFilePath + ".lock")
-    with lock:
-        with open(dataFilePath, "r") as f:
-            fileContent = json.load(f)
-
-        if universeId not in fileContent:
-            return
-
-        if referenceId in fileContent[universeId]:
-            del fileContent[universeId][referenceId]
-
-        with open(dataFilePath, "w") as f:
-            json.dump(fileContent, f, indent=4)
+            json.dump(fileContent, f, indent=2, ensure_ascii=False)
+        
+        f.close()

@@ -6,8 +6,8 @@ import json
 import time
 import threading
 from src import notificationHandler
-
-from src.utility import dataFilePath   # <-- import the SAME path the writer uses
+import os
+import warnings
 
 from typing import TypedDict
 class ReceivedData(TypedDict):
@@ -19,54 +19,45 @@ class ReceivedData(TypedDict):
     api_key: str
 
 app = Flask(__name__)
+from src.utility import dataFilePath, lock
 
 def loop_scheduler():
-    while True:
-        lock = FileLock(f"{dataFilePath}.lock")
+    while True: 
         with lock:
-            # read
-            with open(dataFilePath, "r") as f:
+            with open(f"{dataFilePath}", "r", encoding="utf-8") as f:
                 fileContent = json.load(f)
 
-            now = time.time()
-            to_delete = []  # collect (uniId, refId) to delete after iter
+        keysToRemove = {}
+        currentTime = int(time.time())
 
-            # iterate
-            for uniId, parentEntry in list(fileContent.items()):
-                if not isinstance(parentEntry, dict):
-                    continue
-                for refId, entry in list(parentEntry.items()):
-                    if not isinstance(entry, dict):
-                        continue
-                    due_at = entry.get("time", 0)
-                    if now >= due_at:
-                        # send the notification using the entry payload
-                        try:
-                            print(f"Push to {refId}: {entry.get('message')}")
-                            notificationHandler.pushNotification(entry)
-                            print("Pushed!")
-                        except Exception as e:
-                            print(f"Failed to push {refId}: {e}")
-                            # optionally continue without deleting so it retries next tick
-                        else:
-                            to_delete.append((uniId, refId))
+        for universeId in fileContent:
+            for key in fileContent[universeId]:
+                notificationData: ReceivedData = fileContent[universeId][key]
 
-            # apply deletions
-            for uniId, refId in to_delete:
-                if uniId in fileContent and refId in fileContent[uniId]:
-                    del fileContent[uniId][refId]
-                    # clean up empty universe buckets
-                    if not fileContent[uniId]:
-                        del fileContent[uniId]
+                deadline = notificationData["time"]
+                if currentTime >= deadline:
+                    try:
+                        notificationHandler.pushNotification(notificationData)
+                        print("Push")
+                    except Exception as e:
+                        warnings.warn(f"Notification failed: {e}", RuntimeWarning)
 
-            # write once
-            with open(dataFilePath, "w") as f:
-                json.dump(fileContent, f, indent=4)
+                    keysToRemove[key] = universeId
 
-        time.sleep(1)
+        with lock:
+            with open(f"{dataFilePath}", "r", encoding="utf-8") as f:
+                fileContent = json.load(f)
 
+            for keyToBeRemoved, keyUniverseId in keysToRemove.items():
+                if keyUniverseId in fileContent and keyToBeRemoved in fileContent[keyUniverseId]:
+                    del fileContent[keyUniverseId][keyToBeRemoved]
 
-threading.Thread(target=loop_scheduler).start()
+            with open(f"{dataFilePath}", "w", encoding="utf-8") as f:
+                json.dump(fileContent, f, indent=2, ensure_ascii=False)
+
+        time.sleep(2)
+
+threading.Thread(target=loop_scheduler, daemon=True).start()
 
 @app.route("/Schedule", methods=["POST"])
 def Schedule():
@@ -89,9 +80,8 @@ def Schedule():
 
 @app.route("/data", methods=["GET"])
 def data():
-    lock = FileLock(f"{dataFilePath}.lock")
     with lock:
-        with open(f"{dataFilePath}", "r") as f:
+        with open(f"{dataFilePath}", "r", encoding="utf-8") as f:
             return jsonify(json.load(f))
         
     return "Couldn't get data."
