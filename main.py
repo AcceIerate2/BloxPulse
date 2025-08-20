@@ -21,44 +21,6 @@ class ReceivedData(TypedDict):
 app = Flask(__name__)
 from src.utility import dataFilePath, lock
 
-def loop_scheduler():
-    while True: 
-        with lock:
-            with open(f"{dataFilePath}", "r", encoding="utf-8") as f:
-                fileContent = json.load(f)
-
-        keysToRemove = {}
-        currentTime = int(time.time())
-
-        for universeId in fileContent:
-            for key in fileContent[universeId]:
-                notificationData: ReceivedData = fileContent[universeId][key]
-
-                deadline = notificationData["time"]
-                if currentTime >= deadline:
-                    try:
-                        notificationHandler.pushNotification(notificationData)
-                        print("Push")
-                    except Exception as e:
-                        warnings.warn(f"Notification failed: {e}", RuntimeWarning)
-
-                    keysToRemove[key] = universeId
-
-        with lock:
-            with open(f"{dataFilePath}", "r", encoding="utf-8") as f:
-                fileContent = json.load(f)
-
-            for keyToBeRemoved, keyUniverseId in keysToRemove.items():
-                if keyUniverseId in fileContent and keyToBeRemoved in fileContent[keyUniverseId]:
-                    del fileContent[keyUniverseId][keyToBeRemoved]
-
-            with open(f"{dataFilePath}", "w", encoding="utf-8") as f:
-                json.dump(fileContent, f, indent=2, ensure_ascii=False)
-
-        time.sleep(2)
-
-threading.Thread(target=loop_scheduler, daemon=True).start()
-
 @app.route("/Schedule", methods=["POST"])
 def Schedule():
     receivedData = request.get_json(silent=True) or {}
