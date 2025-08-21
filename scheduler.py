@@ -12,6 +12,8 @@ class ReceivedData(TypedDict):
     api_key: str
 
 def loop_scheduler():
+    print("Running!")
+    
     while True: 
         due_list = []
 
@@ -23,6 +25,8 @@ def loop_scheduler():
                 warnings.warn("Could not load data.json file!")
                 fileContent = {}
 
+            print(fileContent)
+            
             currentTime = int(time.time())
 
             for universeId, universeNotifications in list(fileContent.items()):
@@ -52,8 +56,8 @@ def loop_scheduler():
                 print(f"Pushed Notification: universeId={uni_id}, key={key}")
             except Exception as e:
                 warnings.warn(f"Notification failed {uni_id}/{key}: {e}", RuntimeWarning)
-
-        time.sleep(60)
+    
+        time.sleep(3)
 
 if __name__ == "__main__":
     loop_scheduler()
