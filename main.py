@@ -55,4 +55,23 @@ def index():
     return "Hello World!"
 
 
-loop_scheduler()
+SCHEDULER_FLAG = "/tmp/scheduler.lock"  # ephemeral file (Heroku clears on restart)
+def _start_scheduler_once():
+    if os.path.exists(SCHEDULER_FLAG):
+        return
+    # create the flag file
+    open(SCHEDULER_FLAG, "w").close()
+
+    def _runner():
+        try:
+            print("[scheduler] loop starting", flush=True)
+            loop_scheduler()
+        except Exception as e:
+            print(f"[scheduler] crashed: {e}", flush=True)
+
+    t = threading.Thread(target=_runner, daemon=True)
+    t.start()
+    print("[scheduler] started", flush=True)
+
+# Always try to start, but the file prevents duplicates
+_start_scheduler_once()
