@@ -55,4 +55,4 @@ def loop_scheduler():
             except Exception as e:
                 warnings.warn(f"Notification failed {uni_id}/{key}: {e}", RuntimeWarning)
     
-        time.sleep(3)
+        time.sleep(60)
