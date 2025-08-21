@@ -1,2 +1,1 @@
-web: gunicorn main:app
-worker: python scheduler.py
+web: gunicorn main:app --max-requests 1000 --max-requests-jitter 200
