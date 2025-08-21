@@ -24,8 +24,6 @@ def loop_scheduler():
             except:
                 warnings.warn("Could not load data.json file!")
                 fileContent = {}
-
-            print(fileContent)
             
             currentTime = int(time.time())
 
@@ -58,6 +56,3 @@ def loop_scheduler():
                 warnings.warn(f"Notification failed {uni_id}/{key}: {e}", RuntimeWarning)
     
         time.sleep(3)
-
-if __name__ == "__main__":
-    loop_scheduler()
