@@ -12,6 +12,8 @@ class ReceivedData(TypedDict):
     api_key: str
 
 def loop_scheduler():
+    print("Running!")
+    
     while True: 
         due_list = []
 
