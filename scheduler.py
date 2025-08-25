@@ -1,58 +1,58 @@
-from src.utility import lock, dataFilePath
-from src.notificationHandler import pushNotification
-import warnings, json, time
+databaseUrl = "https://bloxpulsedbserver.pythonanywhere.com/"
+
+from notificationHandler import pushNotification
+import warnings, time, requests
+from threading import Thread
 
 from typing import TypedDict
 class ReceivedData(TypedDict):
-    universeId: str # straight forward
-    notificationId: str # assetid for notifications
-    key: str # userid
-    time: int # set the exact time (that unix epoch thingy)
-    message: str # messsage to send
-    api_key: str
-
-def loop_scheduler():
-    print("Running!")
+    universeId: str 
+    notificationId: str 
+    key: str
+    time: int 
+    message: str
+    api_key: str 
     
-    while True: 
-        due_list = []
-
-        with lock:
-            try:
-                with open(f"{dataFilePath}", "r", encoding="utf-8") as f:
-                    fileContent = json.load(f)
-            except:
-                warnings.warn("Could not load data.json file!")
-                fileContent = {}
-            
-            currentTime = int(time.time())
-
-            for universeId, universeNotifications in list(fileContent.items()):
-                if not isinstance(universeNotifications, dict): 
-                    continue
-
-                for key in list(universeNotifications.keys()):
-                    notificationData: ReceivedData = universeNotifications.get(key)
-                    if not isinstance(notificationData, dict): 
-                        continue
-
-                    try:
-                        deadline = int(notificationData.get("time"))
-                    except:
-                        continue
-
-                    if currentTime >= deadline:
-                        due_list.append((universeId, key, notificationData))
-                        universeNotifications.pop(key, None)
-
-            with open(f"{dataFilePath}", "w", encoding="utf-8") as f:
-                json.dump(fileContent, f, indent=2, ensure_ascii=False)
-
-        for uni_id, key, entry in due_list:
-            try:
-                pushNotification(entry)
-                print(f"Pushed Notification: universeId={uni_id}, key={key}")
-            except Exception as e:
-                warnings.warn(f"Notification failed {uni_id}/{key}: {e}", RuntimeWarning)
+def startPushing():
+    response = requests.get(f"{databaseUrl}get_database")
+    if response.status_code != 200:
+        return
     
-        time.sleep(60)
+    database: list = response.json()
+    if not isinstance(database, list):
+        return
+
+    now = int(time.time())
+
+    due = []
+    for data in database:
+        _time = int(data["time"])
+
+        if now < _time:
+            continue
+        
+        pushNotification(data)
+        
+        universeId = data["universeId"]
+        if not universeId: 
+            continue
+
+        due.append(data)
+
+    success = False
+    for _ in range(3):
+        try:
+            statusCode = requests.post(f"{databaseUrl}bulk_remove", json=due)
+            if statusCode.status_code == 200:
+                success = True
+                break
+        except requests.exceptions.RequestException as m: 
+            time.sleep(1)
+            continue
+
+    if success == False:
+        warnings.warn("Could not bulk remove data!")
+
+while True:
+    time.sleep(60)
+    startPushing()
