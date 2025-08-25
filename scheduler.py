@@ -55,6 +55,8 @@ def startPushing():
     if success == False:
         warnings.warn("Could not bulk remove data!")
 
+print("🚨 running scheduler.py!")
 while True:
+    print("🚨 Cycle Ended.")
     time.sleep(120)
     startPushing()
