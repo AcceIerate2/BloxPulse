@@ -14,6 +14,8 @@ class ReceivedData(TypedDict):
     api_key: str 
     
 def startPushing():
+    print("🚨 Preparing to push notifications!")
+
     response = requests.get(f"{databaseUrl}get_database")
     if response.status_code != 200:
         return
@@ -54,5 +56,5 @@ def startPushing():
         warnings.warn("Could not bulk remove data!")
 
 while True:
-    time.sleep(60)
+    time.sleep(120)
     startPushing()
