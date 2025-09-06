@@ -13,7 +13,6 @@ class ReceivedData(TypedDict):
     api_key: str
 
 def pushNotification(data: ReceivedData):
-    print(data)
     """
     Sends a Roblox cloud notification to the user in data['key'].
     """
