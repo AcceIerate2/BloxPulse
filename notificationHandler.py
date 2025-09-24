@@ -16,7 +16,7 @@ def pushNotification(data: ReceivedData):
     """
     Sends a Roblox cloud notification to the user in data['key'].
     """
-    user_id = data["key"]  # userId from JSON
+    user_id = str.split(str(data["key"]), "_")[0]  # userId from JSON
 
     url = f"{URL_ENDPOINT}/users/{user_id}/notifications"
 
@@ -31,7 +31,7 @@ def pushNotification(data: ReceivedData):
         },
         "payload": {
             "type": "MOMENT",                     # enum from docs
-            "messageId": data["notificationId"],  # NOTE: camelCase
+            "messageId": str.split(str(data["notificationId"]), "_")[0],  # NOTE: camelCase
             "parameters": {
                 "text": { "stringValue": data["message"] }  # fills your {text}
             }
