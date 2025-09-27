@@ -18,8 +18,6 @@ class ReceivedData(TypedDict):
 def startPushing():
     print("🚨 Preparing to push notifications!")
 
-    print(db_auth_key)
-
     response = requests.get(f"{databaseUrl}get_database?auth={db_auth_key}")
     if response.status_code != 200:
         warnings.warn(f"[{response.status_code}] {response.text}")
