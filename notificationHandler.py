@@ -2,7 +2,7 @@ import requests
 from typing import TypedDict
 import config
 
-URL_ENDPOINT = config.URL_ENDPOINT
+API_ENDPOINT = config.API_ENDPOINT
 
 class ReceivedData(TypedDict):
     universeId: str       # straight forward
@@ -16,9 +16,9 @@ def pushNotification(data: ReceivedData):
     """
     Sends a Roblox cloud notification to the user in data['key'].
     """
-    user_id = str.split(str(data["key"]), "_")[0]  # userId from JSON
+    user_id = str.split(str(data["key"]), "_")[0]  
 
-    url = f"{URL_ENDPOINT}/users/{user_id}/notifications"
+    url = f"{API_ENDPOINT}/users/{user_id}/notifications"
 
     headers = {
         "x-api-key": data["api_key"],
@@ -30,10 +30,10 @@ def pushNotification(data: ReceivedData):
             "universe": f"universes/{data['universeId']}"
         },
         "payload": {
-            "type": "MOMENT",                     # enum from docs
-            "messageId": str.split(str(data["notificationId"]), "_")[0],  # NOTE: camelCase
+            "type": "MOMENT",                    
+            "messageId": str.split(str(data["notificationId"]), "_")[0],  
             "parameters": {
-                "text": { "stringValue": data["message"] }  # fills your {text}
+                "text": { "stringValue": data["message"] }  
             }
         }
     }

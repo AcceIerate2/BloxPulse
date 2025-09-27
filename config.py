@@ -1,1 +1,1 @@
-URL_ENDPOINT = "https://apis.roblox.com/cloud/v2"
+API_ENDPOINT = "https://apis.roblox.com/cloud/v2"

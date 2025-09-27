@@ -1,4 +1,5 @@
-databaseUrl = "https://bloxpulsedbserver.pythonanywhere.com/"
+import os
+databaseUrl = os.getenv("DB_URL")
 
 from notificationHandler import pushNotification
 import warnings, time, requests
@@ -16,7 +17,7 @@ class ReceivedData(TypedDict):
 def startPushing():
     print("🚨 Preparing to push notifications!")
 
-    response = requests.get(f"{databaseUrl}get_database")
+    response = requests.get(f"{databaseUrl}get_database?auth={os.getenv('DB_AUTH_KEY')}")
     if response.status_code != 200:
         return
     
@@ -44,7 +45,7 @@ def startPushing():
     success = False
     for _ in range(3):
         try:
-            statusCode = requests.post(f"{databaseUrl}bulk_remove", json=due)
+            statusCode = requests.post(f"{databaseUrl}bulk_remove?auth={os.getenv('DB_AUTH_KEY')}", json=due)
             if statusCode.status_code == 200:
                 success = True
                 break
