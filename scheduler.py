@@ -1,5 +1,6 @@
 import os
-databaseUrl = os.getenv("DB_URL")
+databaseUrl = str(os.getenv("DB_URL"))
+db_auth_key = str(os.getenv("DB_AUTH_KEY"))
 
 from notificationHandler import pushNotification
 import warnings, time, requests
@@ -17,7 +18,9 @@ class ReceivedData(TypedDict):
 def startPushing():
     print("🚨 Preparing to push notifications!")
 
-    response = requests.get(f"{databaseUrl}get_database?auth={os.getenv('DB_AUTH_KEY')}")
+    print(db_auth_key)
+
+    response = requests.get(f"{databaseUrl}get_database?auth={db_auth_key}")
     if response.status_code != 200:
         warnings.warn(f"[{response.status_code}] {response.text}")
         return
@@ -46,7 +49,7 @@ def startPushing():
     success = False
     for _ in range(3):
         try:
-            statusCode = requests.post(f"{databaseUrl}bulk_remove?auth={os.getenv('DB_AUTH_KEY')}", json=due)
+            statusCode = requests.post(f"{databaseUrl}bulk_remove?auth={db_auth_key}", json=due)
             if statusCode.status_code == 200:
                 success = True
                 break
