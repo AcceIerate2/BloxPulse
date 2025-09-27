@@ -19,6 +19,7 @@ def startPushing():
 
     response = requests.get(f"{databaseUrl}get_database?auth={os.getenv('DB_AUTH_KEY')}")
     if response.status_code != 200:
+        warnings.warn(f"[{response.status_code}] {response.text}")
         return
     
     database: list = response.json()
